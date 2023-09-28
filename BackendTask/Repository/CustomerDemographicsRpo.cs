@@ -1,68 +1,82 @@
-﻿using Task.Entities;
+﻿
+using Task.Entities;
 using Task.Interfaces;
 
-namespace Task.DataService
+namespace Task.Rpo
 {
-    public class CustomerDemographicsDSL : ICustomerDemographicsDSL
+    public class CustomerDemographicsRpo : ICustomerDemographicsRpo
     {
+        private IEnumerable<Booking> Bookings;
+        private IEnumerable<BookingService> BookingServices;
+        private IEnumerable<Client> Clients;
+        private IEnumerable<Transaction> Transactions;
+        private IEnumerable<Branch> Branches;
 
-        public IEnumerable<object> CalculateGenderDistribution(IEnumerable<Client> clients)
+        public CustomerDemographicsRpo()
         {
-            var genderDistribution = clients
+            Bookings = MockData.Bookings.ToList();
+            BookingServices = MockData.BookingServices.ToList();
+            Clients = MockData.Clients.ToList();
+            Transactions = MockData.Transactions.ToList();
+            Branches = MockData.Branches.ToList();
+        }
+        public IEnumerable<object> CalculateGenderDistribution()
+        {
+            var genderDistribution = Clients
                 .GroupBy(c => c.Gender)
                 .Select(group => new
                 {
                     Gender = group.Key,
                     Count = group.Count(),
-                    Percentage = Math.Round(group.Count() * 100.0 / clients.Count(), 2)
+                    Percentage = Math.Round(group.Count() * 100.0 / Clients.Count(), 2)
                 });
             return genderDistribution;
         }
 
-        public IEnumerable<object> CalculateAgeDistribution(IEnumerable<Client> clients)
+        public IEnumerable<object> CalculateAgeDistribution()
         {
-            var ageDistribution = clients
+            var ageDistribution = Clients
                 .GroupBy(c => CalculateAgeRange(c.Birthdate))
                 .Select(group => new
                 {
                     AgeRange = group.Key,
                     Count = group.Count(),
-                    Percentage = Math.Round(group.Count() * 100.0 / clients.Count(), 2)
+                    Percentage = Math.Round(group.Count() * 100.0 / Clients.Count(), 2)
                 })
                 .OrderBy(group => group.AgeRange.MinAge);
             return ageDistribution;
         }
 
-        public IEnumerable<object> CalculateGeographicDistribution(IEnumerable<Client> clients)
+        public IEnumerable<object> CalculateGeographicDistribution()
         {
-            var geographicDistribution = clients
+            var geographicDistribution = Clients
                 .GroupBy(c => new { c.City, c.Country })
                 .Select(group => new
                 {
                     City = group.Key.City,
                     Country = group.Key.Country,
                     Count = group.Count(),
-                    Percentage = Math.Round(group.Count() * 100.0 / clients.Count(), 2)
+                    Percentage = Math.Round(group.Count() * 100.0 / Clients.Count(), 2)
                 })
                 .OrderByDescending(group => group.Count);
             return geographicDistribution;
         }
 
-        public IEnumerable<object> CalculateServicePreferences(IEnumerable<BookingService> bookingServices)
+        public IEnumerable<object> CalculateServicePreferences()
         {
-            var servicePreferences = bookingServices
+            var servicePreferences = BookingServices
                 .GroupBy(bs => bs.ServiceId)
                 .Select(group => new
                 {
                     ServiceId = group.Key,
                     Count = group.Count(),
-                    Percentage = Math.Round(group.Count() * 100.0 / bookingServices.Count(), 2)
+                    Percentage = Math.Round(group.Count() * 100.0 / BookingServices.Count(), 2)
                 })
                 .OrderByDescending(group => group.Count);
             return servicePreferences;
         }
 
-        public IEnumerable<object> CalculatePaymentMethods(IEnumerable<Transaction> transactions)
+        public IEnumerable<object> CalculatePaymentMethods()
         {
             var paymentMethods = transactions
                 .GroupBy(t => t.PaymentMethod)
@@ -70,7 +84,7 @@ namespace Task.DataService
                 {
                     PaymentMethod = group.Key,
                     Count = group.Count(),
-                    Percentage = Math.Round(group.Count() * 100.0 / transactions.Count(), 2)
+                    Percentage = Math.Round(group.Count() * 100.0 / Transactions.Count(), 2)
                 });
             return paymentMethods;
         }
@@ -109,5 +123,9 @@ namespace Task.DataService
         }
 
 
+        public void ApplyReportFilter(ReportFilter reportFilter)
+        {
+
+        }
     }
 }

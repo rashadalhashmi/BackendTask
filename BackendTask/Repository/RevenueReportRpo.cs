@@ -1,26 +1,34 @@
-﻿using Task.Entities;
+﻿
+using Task.Entities;
 using Task.Interfaces;
 
-namespace Task.DataService
+namespace Task.Rpo
 {
-    public class RevenueReportDSl : IRevenueReportDSl
+    public class RevenueReportRpo : IRevenueReportRpo
     {
-     
-        public RevenueReportDSl()
-        {
+        private IEnumerable<Booking> Bookings;
+        private IEnumerable<BookingService> BookingServices;
+        private IEnumerable<Client> Clients;
+        private IEnumerable<Transaction> Transactions;
+        private IEnumerable<Branch> Branches;
 
+        public RevenueReportRpo()
+        {
+            Bookings = MockData.Bookings.ToList();
+            BookingServices = MockData.BookingServices.ToList();
+            Clients = MockData.Clients.ToList();
+            Transactions = MockData.Transactions.ToList();
+            Branches = MockData.Branches.ToList();
+        }
+        public decimal CalculateTotalRevenue()
+        {
+            return Transactions.Sum(transaction => transaction.Amount);
         }
 
-
-        public decimal CalculateTotalRevenue(IEnumerable<Transaction> transactions)
+        public IEnumerable<object> CalculateRevenueByService()
         {
-            return transactions.Sum(transaction => transaction.Amount);
-        }
-
-        public IEnumerable<object> CalculateRevenueByService(IEnumerable<Transaction> transactions, IEnumerable<BookingService> bookingServices)
-        {
-            var revenueByService = from transaction in transactions
-                                   join bookingService in bookingServices
+            var revenueByService = from transaction in Transactions
+                                   join bookingService in BookingServices
                                    on transaction.BookingId equals bookingService.BookingId
                                    group bookingService by bookingService.ServiceId into grouped
                                    select new
@@ -31,9 +39,9 @@ namespace Task.DataService
             return revenueByService;
         }
 
-        public IEnumerable<object> CalculateRevenueByPaymentMethod(IEnumerable<Transaction> transactions)
+        public IEnumerable<object> CalculateRevenueByPaymentMethod()
         {
-            var revenueByPaymentMethod = transactions.GroupBy(transaction => transaction.PaymentMethod)
+            var revenueByPaymentMethod = Transactions.GroupBy(transaction => transaction.PaymentMethod)
                                                      .Select(group => new
                                                      {
                                                          PaymentMethod = group.Key,
@@ -42,12 +50,12 @@ namespace Task.DataService
             return revenueByPaymentMethod;
         }
 
-        public IEnumerable<object> CalculateRevenueByBranch(IEnumerable<Transaction> transactions, IEnumerable<Booking> bookings, IEnumerable<Branch> branches)
+        public IEnumerable<object> CalculateRevenueByBranch()
         {
-            var revenueByBranch = from transaction in transactions
-                                  join booking in bookings
+            var revenueByBranch = from transaction in Transactions
+                                  join booking in Bookings
                                   on transaction.BookingId equals booking.BookingId
-                                  join branch in branches
+                                  join branch in Branches
                                   on booking.BranchId equals branch.BranchId
                                   group transaction by branch.BranchId into grouped
                                   select new
@@ -58,11 +66,11 @@ namespace Task.DataService
             return revenueByBranch;
         }
 
-        public IEnumerable<object> CalculateRevenueByBranchCity(IEnumerable<Transaction> transactions, IEnumerable<Booking> bookings, IEnumerable<Branch> branches)
+        public IEnumerable<object> CalculateRevenueByBranchCity()
         {
-            var revenueByBranchCity = from t in transactions
-                                      join b in bookings on t.BookingId equals b.BookingId
-                                      join br in branches on b.BranchId equals br.BranchId
+            var revenueByBranchCity = from t in Transactions
+                                      join b in Bookings on t.BookingId equals b.BookingId
+                                      join br in Branches on b.BranchId equals br.BranchId
                                       group t by br.City into cityGroup
                                       select new
                                       {
@@ -72,11 +80,11 @@ namespace Task.DataService
             return revenueByBranchCity;
         }
 
-        public IEnumerable<object> CalculateRevenueByBranchCountry(IEnumerable<Transaction> transactions, IEnumerable<Booking> bookings, IEnumerable<Branch> branches)
+        public IEnumerable<object> CalculateRevenueByBranchCountry()
         {
-            var revenueByBranchCountry = from t in transactions
-                                         join b in bookings on t.BookingId equals b.BookingId
-                                         join br in branches on b.BranchId equals br.BranchId
+            var revenueByBranchCountry = from t in Transactions
+                                         join b in Bookings on t.BookingId equals b.BookingId
+                                         join br in Branches on b.BranchId equals br.BranchId
                                          group t by br.Country into countryGroup
                                          select new
                                          {
@@ -85,7 +93,6 @@ namespace Task.DataService
                                          };
             return revenueByBranchCountry;
         }
-
 
     }
 }

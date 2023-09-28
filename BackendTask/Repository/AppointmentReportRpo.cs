@@ -1,20 +1,34 @@
 ﻿using Task.Entities;
 using Task.Interfaces;
 
-namespace Task.DataService
+namespace Task.Rpo
 {
-    public class AppointmentReportDSL: IAppointmentReportDSL
+    public class AppointmentReportRpo : IAppointmentReportRpo, IAppointmentReportRpo
     {
 
-        public int CalculateTotalAppointments(IEnumerable<Booking> bookings)
+        private IEnumerable<Booking> Bookings;
+        private IEnumerable<BookingService> BookingServices;
+        private IEnumerable<Client> Clients;
+        private IEnumerable<Transaction> Transactions;
+        private IEnumerable<Branch> Branches;
+
+        public AppointmentReportRpo()
         {
-            return bookings.Count();
+            Bookings = MockData.Bookings.ToList();
+            BookingServices = MockData.BookingServices.ToList();
+            Clients = MockData.Clients.ToList();
+            Transactions = MockData.Transactions.ToList();
+            Branches = MockData.Branches.ToList();
+        }
+        public int CalculateTotalAppointments()
+        {
+            return Bookings.Count();
         }
 
-        public IEnumerable<object> CalculateAppointmentsByService(IEnumerable<Booking> bookings, IEnumerable<BookingService> bookingServices)
+        public IEnumerable<object> CalculateAppointmentsByService()
         {
-            var appointmentByService = from b in bookings
-                                       join bs in bookingServices on b.BookingId equals bs.BookingId
+            var appointmentByService = from b in Bookings
+                                       join bs in BookingServices on b.BookingId equals bs.BookingId
                                        group bs by bs.ServiceId into serviceGroup
                                        select new
                                        {
@@ -24,9 +38,9 @@ namespace Task.DataService
             return appointmentByService;
         }
 
-        public IEnumerable<object> CalculateAppointmentsByBranch(IEnumerable<Booking> bookings)
+        public IEnumerable<object> CalculateAppointmentsByBranch()
         {
-            var appointmentByBranch = from b in bookings
+            var appointmentByBranch = from b in Bookings
                                       group b by b.BranchId into grouped
                                       select new
                                       {
@@ -36,9 +50,9 @@ namespace Task.DataService
             return appointmentByBranch;
         }
 
-        public IEnumerable<object> CalculateAppointmentsByStatus(IEnumerable<Booking> bookings)
+        public IEnumerable<object> CalculateAppointmentsByStatus()
         {
-            var appointmentByStatus = from b in bookings
+            var appointmentByStatus = from b in Bookings
                                       group b by b.Status into grouped
                                       select new
                                       {
@@ -48,10 +62,10 @@ namespace Task.DataService
             return appointmentByStatus;
         }
 
-        public IEnumerable<object> CalculateAppointmentsByBranchCountry(IEnumerable<Booking> bookings, IEnumerable<Branch> branches)
+        public IEnumerable<object> CalculateAppointmentsByBranchCountry()
         {
-            var appointmentByBranchCountry = from b in bookings
-                                             join br in branches on b.BranchId equals br.BranchId
+            var appointmentByBranchCountry = from b in Bookings
+                                             join br in Branches on b.BranchId equals br.BranchId
                                              group br by br.Country into grouped
                                              select new
                                              {
@@ -61,10 +75,10 @@ namespace Task.DataService
             return appointmentByBranchCountry;
         }
 
-        public IEnumerable<object> CalculateAppointmentsByBranchCity(IEnumerable<Booking> bookings, IEnumerable<Branch> branches)
+        public IEnumerable<object> CalculateAppointmentsByBranchCity()
         {
-            var appointmentByBranchCity = from b in bookings
-                                          join br in branches on b.BranchId equals br.BranchId
+            var appointmentByBranchCity = from b in Bookings
+                                          join br in Branches on b.BranchId equals br.BranchId
                                           group br by br.City into grouped
                                           select new
                                           {
